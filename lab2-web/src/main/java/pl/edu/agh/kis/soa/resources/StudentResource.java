@@ -10,8 +10,10 @@ import javax.annotation.security.RolesAllowed;
 import javax.ejb.Local;
 import javax.ejb.Stateless;
 import javax.jws.WebParam;
+import javax.print.attribute.standard.Media;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.jboss.resteasy.client.exception.ResteasyClientException;
 import pl.edu.agh.kis.soa.resources.model.Student;
@@ -90,5 +92,13 @@ public class StudentResource {
 		if (studentsWithId.get(0).getAvatar() == null)
 			throw new ResteasyClientException("Student doesn't have any avatar!");
 		return studentsWithId.get(0).getAvatar();
+	}
+
+	@RolesAllowed("other")
+	@PUT
+	@Path("addStudent")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public void addStudent(Student student){
+		students.add(student);
 	}
 }
