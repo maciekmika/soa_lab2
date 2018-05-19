@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns="http://java.sun.com/xml/ns/javaee" 
+	xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
+	version="2.5">
+
+  <display-name>lab2-web</display-name>
+	<context-param>
+		<param-name>resteasy.role.based.security</param-name>
+		<param-value>true</param-value>
+	</context-param>
+
+  <filter>
+  	<filter-name>Resteasy</filter-name>
+  	<filter-class>
+  		org.jboss.resteasy.plugins.server.servlet.FilterDispatcher
+  	</filter-class>
+  	<init-param>
+  		<param-name>javax.ws.rs.Application</param-name>
+  		<param-value>pl.edu.agh.kis.soa.rest.Lab2RestApplication</param-value>
+  	</init-param>
+  </filter>
+  <filter-mapping>
+  	<filter-name>Resteasy</filter-name>
+  	<url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Resteasy</web-resource-name>
+			<url-pattern>/security</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>other</role-name>
+		</auth-constraint>
+	</security-constraint>
+
+	<login-config>
+		<auth-method>BASIC</auth-method>
+		<realm-name>Test</realm-name>
+	</login-config>
+
+	<security-role>
+		<role-name>other</role-name>
+	</security-role>
+
+</web-app>
