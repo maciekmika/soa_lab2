@@ -85,6 +85,14 @@
          <version>3.0.2.Final</version>
       </dependency>
 
+      <!-- https://mvnrepository.com/artifact/org.jboss.resteasy/resteasy-multipart-provider -->
+      <dependency>
+         <groupId>org.jboss.resteasy</groupId>
+         <artifactId>resteasy-multipart-provider</artifactId>
+         <version>3.5.1.Final</version>
+      </dependency>
+
+
    </dependencies>
 
    <build>
