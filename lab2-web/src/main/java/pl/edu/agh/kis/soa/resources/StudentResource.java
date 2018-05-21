@@ -15,6 +15,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.ejb.Local;
 import javax.ejb.Stateless;
 import javax.jws.WebParam;
+import javax.persistence.PostUpdate;
 import javax.print.attribute.standard.Media;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -73,14 +74,14 @@ public class StudentResource {
 
 	@RolesAllowed("other")
 	@GET
-	@Path("getStudent")
+	@Path("getStudent/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Student getStudent(@QueryParam("id") String studentId) {
+	public Student getStudent(@PathParam("id") String studentId) {
 		for(int i=0;i<students.size();i++){
 			if(students.get(i).getStudentId().equals(studentId))
 				return students.get(i);
 		}
-		return null;
+		throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND).entity("Student not found!").build());
 	}
 
 	@RolesAllowed("other")
@@ -88,19 +89,22 @@ public class StudentResource {
 	@Path("getStudents")
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<Student> getStudents() {
-		return students;
+		if(students.isEmpty())
+			throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND).entity("Students not found!").build());
+		else
+			return students;
 	}
 
 	@RolesAllowed("other")
 	@GET
-	@Path("getAvatar")
+	@Path("getAvatar/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public byte[] getAvatarById(@QueryParam("id") String id) {
+	public byte[] getAvatarById(@PathParam("id") String id) {
 		List<Student> studentsWithId = students.stream().filter(t -> t.getStudentId().equals(id)).collect(Collectors.toList());
 		if (studentsWithId.isEmpty())
-			throw new IllegalArgumentException("Student with provided id does not exist");
+			throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND).entity("Student not found!").build());//return null;//throw new IllegalArgumentException("Student with provided id does not exist");
 		if (studentsWithId.get(0).getAvatar() == null)
-			throw new ResteasyClientException("Student doesn't have any avatar!");
+			throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND).entity("Avatar not found!").build());//return null;//throw new ResteasyClientException("Student doesn't have any avatar!");
 		return studentsWithId.get(0).getAvatar();
 	}
 
@@ -108,20 +112,52 @@ public class StudentResource {
 	@PUT
 	@Path("addStudent")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public void addStudent(Student student){
+	public Response addStudent(Student student){
 		for(int i=0;i<students.size();i++){
 			if(students.get(i).getStudentId().equals(student.getStudentId()))
 				students.remove(i);
 		}
 		students.add(student);
+		return Response.status(Response.Status.CREATED).entity("Student added").build();
+	}
+
+	@RolesAllowed("other")
+	@DELETE
+	@Path("deleteStudent/{id}")
+	public Response deleteStudent(@PathParam("id") String id){
+		for(int i=0;i<students.size();i++){
+			if(students.get(i).getStudentId().equals(id)) {
+				students.remove(i);
+				return Response.status(Response.Status.OK).entity("Student removed").build();
+			}
+		}
+		return Response.status(Response.Status.NOT_FOUND).entity("Student doesn't exsist!").build();
 
 	}
 
 	@RolesAllowed("other")
+	@PUT
+	@Path("updateStudent/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response updateStudent(@PathParam("id") String id, Student student){
+		for(int i=0;i<students.size();i++){
+			if(students.get(i).getStudentId().equals(id)) {
+				students.get(i).setAvatar(student.getAvatar());
+				students.get(i).setFirstName(student.getFirstName());
+				students.get(i).setLastName(student.getLastName());
+				students.get(i).setSubjects(student.getSubjects());
+				return Response.status(Response.Status.OK).entity("Student updated").build();
+			}
+		}
+
+		return Response.status(Response.Status.NOT_FOUND).entity("Student doesn't exsist!").build();
+	}
+
+	@RolesAllowed("other")
 	@POST
-	@Path("addAvatarForStudent")
+	@Path("addAvatarForStudent/{id}")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response uploadAvatar(@QueryParam("id") String studentId, MultipartFormDataInput input){
+	public Response uploadAvatar(@PathParam("id") String studentId, MultipartFormDataInput input){
 		String fileName = "";
 
 		Map<String, List<InputPart>> uploadForm = input.getFormDataMap();
